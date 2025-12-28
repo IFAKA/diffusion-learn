@@ -144,14 +144,14 @@ export const lessons: Record<string, Lesson> = {
       {
         id: "1-1-1",
         type: "predict",
-        prompt: "Imagine you need to teach a robot to draw 'a cat wearing sunglasses on a beach'. How would you explain it?",
-        context: "The robot has never seen a cat, a beach, or sunglasses before. What would you tell it?",
+        prompt: "Try to write instructions for a robot to draw 'a cat wearing sunglasses on a beach'. Now imagine doing this for EVERY possible picture someone could ask for.",
+        context: "The robot has never seen a cat, a beach, or sunglasses before. You need to explain everything from scratch.",
         hints: [
           "There are millions of different cats - fat cats, skinny cats, fluffy cats...",
           "A beach could look so many different ways too",
-          "How would you explain what 'cute' or 'funny' looks like?",
+          "And that's just ONE picture. What about 'a dog playing chess in space'? Or 'a medieval knight eating pizza'?",
         ],
-        insight: "It's impossible to write instructions for every possible picture! There are endless ways to draw a cat, endless types of beaches, endless combinations. You'd be writing rules forever.",
+        insight: "You'd be writing rules forever! There are endless ways to draw a cat, endless types of beaches, endless combinations. No matter how many instructions you write, someone can always ask for something new.",
         misconceptions: [
           "You might think: just save a bunch of pictures and pick one! But what if someone asks for something you don't have saved?",
           "You might think: just describe how to draw each thing! But there are infinite ways to draw anything.",
@@ -400,13 +400,13 @@ export const lessons: Record<string, Lesson> = {
       {
         id: "1-5-2",
         type: "explain",
-        prompt: "Imagine a master chef teaches a student. The chef takes 2 hours to cook a dish, but the student learns to make it in 20 minutes. How?",
+        prompt: "A master chef takes 2 hours to cook a dish using 50 careful steps. A student watches the chef cook, then tries to make the same dish. The student gets it done in 20 minutes. What did the student do differently?",
         hints: [
-          "Does the student learn every single technique?",
-          "Or does the student learn shortcuts to get the same result?",
+          "Did the student copy every single step?",
+          "Or did the student learn shortcuts to get the same result?",
         ],
-        modelAnswer: "The student watches what the chef's FINAL dish looks like, then learns shortcuts to get there faster. The student doesn't copy every step - they skip some and take bigger jumps. They get 95% of the quality in way less time!",
-        insight: "This is how fast AI image makers work! A slow careful AI (the chef) shows a fast AI (the student) what good pictures look like. The fast AI learns shortcuts to make similar pictures in fewer steps.",
+        modelAnswer: "The student focused on what the FINAL dish should look like, then found shortcuts to get there faster. Instead of copying all 50 steps, they skipped some and took bigger jumps. They get 95% of the quality in way less time!",
+        insight: "This is how fast AI image makers work! A slow careful AI (the chef) makes good pictures. A fast AI (the student) watches those results and learns shortcuts to make similar pictures in fewer steps.",
       },
       {
         id: "1-5-3",
@@ -784,13 +784,13 @@ export const lessons: Record<string, Lesson> = {
       {
         id: "3-3-4",
         type: "explain",
-        prompt: "You learned that low guidance = more natural, high guidance = more overdone. Why is there a tradeoff? Why can't we have both 'follows words perfectly' AND 'looks natural'?",
+        prompt: "You learned that low guidance = more natural, high guidance = more overdone. Why does following words MORE strictly make things look LESS natural?",
         hints: [
-          "Think about what 'natural' means - real photos aren't perfect",
-          "Following instructions 'perfectly' might mean exaggerating things",
+          "Think about real photos - are things ever 'perfectly' red or 'perfectly' big?",
+          "What happens when you turn up any slider to maximum?",
         ],
-        modelAnswer: "Natural pictures have imperfections and subtlety. When the computer follows your words TOO strictly, it exaggerates everything - 'red' becomes SUPER red, 'big' becomes HUGE. Real things are more subtle. You have to choose: follow words exactly (but look fake) or be more natural (but maybe miss some details).",
-        insight: "The tradeoff exists because 'following instructions perfectly' and 'looking natural' conflict! Real photos are subtle and imperfect. Strict instruction-following means exaggeration. Most people use a middle setting (7-12) for the best balance.",
+        modelAnswer: "High guidance tells the model: 'Make SURE this is red! Make SURE this is big!' The model overcorrects to be certain it matches your words. It's like if you asked someone to 'definitely make the text readable' and they made it HUGE. The model plays it safe by exaggerating.",
+        insight: "The tradeoff exists because certainty requires exaggeration. To GUARANTEE something is red, the model makes it SUPER red. Real photos have subtle, imperfect colors because nothing needs to prove itself. Most people use a middle setting (7-12) for the best balance.",
       },
     ],
     transferQuestion: {
@@ -843,7 +843,7 @@ export const lessons: Record<string, Lesson> = {
       {
         id: "4-1-3",
         type: "predict",
-        prompt: "When making a picture of 'a cat wearing a tiny hat', what does the word 'tiny' need to pay attention to?",
+        prompt: "In 'a cat wearing a tiny hat', the computer needs to know: does 'tiny' describe the cat or the hat? What should 'tiny' connect to?",
         choices: [
           { id: "a", text: "The cat (making the whole cat tiny)", isCorrect: false },
           { id: "b", text: "The hat (making just the hat tiny)", isCorrect: true },
@@ -851,10 +851,10 @@ export const lessons: Record<string, Lesson> = {
           { id: "d", text: "Nothing - 'tiny' is ignored", isCorrect: false },
         ],
         hints: [
-          "What's supposed to be tiny - the cat or the hat?",
-          "Read the sentence carefully!",
+          "Read the phrase carefully: 'a tiny hat'",
+          "Which noun comes right after 'tiny'?",
         ],
-        insight: "The word 'tiny' needs to focus on 'hat', not 'cat'! This is what attention does - it connects words to the right things. A 'tiny hat' on a normal-sized cat, not a tiny cat with a hat.",
+        insight: "'Tiny' connects to 'hat', not 'cat'. This word-to-object connection is exactly what attention computes. Without attention, the model might make a tiny cat with a normal hat—or worse, make everything tiny!",
       },
     ],
   },
@@ -1268,18 +1268,18 @@ export const lessons: Record<string, Lesson> = {
       {
         id: "8-1-1",
         type: "identify",
-        prompt: "You now understand how AI image makers work! What's the biggest thing missing if you want to actually BUILD one?",
+        prompt: "You now understand the concepts behind AI image makers. But understanding how a car engine works doesn't mean you can build one. What else would you need?",
         choices: [
-          { id: "a", text: "Understanding how they work (you have this!)", isCorrect: false },
-          { id: "b", text: "Programming skills to actually write the code", isCorrect: true },
+          { id: "a", text: "More conceptual understanding", isCorrect: false },
+          { id: "b", text: "Programming skills to turn concepts into code", isCorrect: true },
           { id: "c", text: "Knowing why the small version is faster", isCorrect: false },
-          { id: "d", text: "Understanding attention", isCorrect: false },
+          { id: "d", text: "Understanding attention better", isCorrect: false },
         ],
         hints: [
-          "Knowing how something works vs actually making it",
-          "Could you write the code right now?",
+          "You understand WHAT happens, but could you MAKE it happen?",
+          "Concepts live in your head. Code runs on computers.",
         ],
-        insight: "Understanding and building are different! You know HOW these AIs work, but you'd need to learn programming (Python) and AI tools (PyTorch) to actually make one yourself.",
+        insight: "Understanding and building are different skills! You know WHAT these AIs do and WHY, but turning that into working code requires programming (Python) and AI tools (PyTorch). This course gave you the foundation—the next step is learning to code.",
       },
       {
         id: "8-1-2",

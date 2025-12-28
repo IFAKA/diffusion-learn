@@ -99,7 +99,7 @@ export const lessons: Record<string, Lesson> = {
       {
         type: "text",
         content:
-          "This is exactly the challenge computers face. They don't \"see\" the world—they only understand numbers. So how do you go from \"a cat wearing sunglasses on a beach\" to actual pixels?",
+          "This is exactly the challenge computers face. They don't \"see\" the world—they only understand numbers. So how CAN a computer go from \"a cat wearing sunglasses on a beach\" to actual pixels? We'll answer this step by step.",
       },
       {
         type: "interactive",
@@ -129,14 +129,14 @@ export const lessons: Record<string, Lesson> = {
     sections: [
       {
         type: "analogy",
-        title: "Think about art school",
+        title: "Think about how you learned",
         content:
-          "How did you learn what a cat looks like? You saw thousands of cats—in real life, in photos, in drawings. Your brain built an internal model of \"cat-ness\" from all these examples.",
+          "How did you learn what a cat looks like? You saw thousands of cats—in real life, in photos, in drawings. Your brain built an internal understanding of \"cat-ness\" from all these examples.",
       },
       {
         type: "text",
         content:
-          "AI image generators learn the same way. They're shown millions of image-text pairs: photos with captions, artwork with descriptions. Over time, they build a statistical model of what things look like.",
+          "AI image generators do something similar, but simpler. They're shown millions of image-text pairs: photos with captions, artwork with descriptions. They don't \"understand\" cats the way you do—they learn statistical patterns: \"When text says 'cat', these pixel patterns tend to appear.\"",
       },
       {
         type: "interactive",
@@ -197,7 +197,7 @@ export const lessons: Record<string, Lesson> = {
       {
         type: "text",
         content:
-          "The training process works backwards: take a clean image, add noise step by step until it's pure static, then train the model to reverse each step. The model learns: \"Given this noisy image, what should the slightly cleaner version look like?\"",
+          "But wait—where do we get dirty windows to practice on? We make them ourselves! During training, we take clean images and add noise step by step until they become pure static. Then we teach the model to reverse each step. The model learns: \"Given this noisy image, what should the slightly cleaner version look like?\"",
       },
       {
         type: "diagram",
