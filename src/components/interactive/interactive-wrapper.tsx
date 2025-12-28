@@ -28,6 +28,68 @@ const FullPipeline = dynamic(() => import("./full-pipeline").then(m => m.FullPip
   loading: () => <LoadingPlaceholder />,
 });
 
+// New components
+const PromptChallenge = dynamic(() => import("./prompt-challenge").then(m => m.PromptChallenge), {
+  loading: () => <LoadingPlaceholder />,
+});
+const TrainingDataDemo = dynamic(() => import("./training-data-demo").then(m => m.TrainingDataDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const EncoderDemo = dynamic(() => import("./encoder-demo").then(m => m.EncoderDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const BilingualDemo = dynamic(() => import("./bilingual-demo").then(m => m.BilingualDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const ForwardProcess = dynamic(() => import("./forward-process").then(m => m.ForwardProcess), {
+  loading: () => <LoadingPlaceholder />,
+});
+const ReverseProcess = dynamic(() => import("./reverse-process").then(m => m.ReverseProcess), {
+  loading: () => <LoadingPlaceholder />,
+});
+const GaussianDemo = dynamic(() => import("./gaussian-demo").then(m => m.GaussianDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const GuidanceDemo = dynamic(() => import("./guidance-demo").then(m => m.GuidanceDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const CFGDemo = dynamic(() => import("./cfg-demo").then(m => m.CFGDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const AttentionBasics = dynamic(() => import("./attention-basics").then(m => m.AttentionBasics), {
+  loading: () => <LoadingPlaceholder />,
+});
+const SelfAttentionViz = dynamic(() => import("./self-attention-viz").then(m => m.SelfAttentionViz), {
+  loading: () => <LoadingPlaceholder />,
+});
+const ArchitectureComparison = dynamic(() => import("./architecture-comparison").then(m => m.ArchitectureComparison), {
+  loading: () => <LoadingPlaceholder />,
+});
+const S3DiTDemo = dynamic(() => import("./s3-dit-demo").then(m => m.S3DiTDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const LatentViz = dynamic(() => import("./latent-viz").then(m => m.LatentViz), {
+  loading: () => <LoadingPlaceholder />,
+});
+const ComputeComparison = dynamic(() => import("./compute-comparison").then(m => m.ComputeComparison), {
+  loading: () => <LoadingPlaceholder />,
+});
+const DecoderDemo = dynamic(() => import("./decoder-demo").then(m => m.DecoderDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const TeacherStudentDemo = dynamic(() => import("./teacher-student-demo").then(m => m.TeacherStudentDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const DistributionDemo = dynamic(() => import("./distribution-demo").then(m => m.DistributionDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const DecoupledDemo = dynamic(() => import("./decoupled-demo").then(m => m.DecoupledDemo), {
+  loading: () => <LoadingPlaceholder />,
+});
+const FinalQuiz = dynamic(() => import("./final-quiz").then(m => m.FinalQuiz), {
+  loading: () => <LoadingPlaceholder />,
+});
+
 function LoadingPlaceholder() {
   return (
     <div className="w-full h-40 flex items-center justify-center">
@@ -61,6 +123,27 @@ const componentMap: Record<string, React.ComponentType<any>> = {
   DiffusionDiagram,
   TradeoffExplorer,
   FullPipeline,
+  // New components
+  PromptChallenge,
+  TrainingDataDemo,
+  EncoderDemo,
+  BilingualDemo,
+  ForwardProcess,
+  ReverseProcess,
+  GaussianDemo,
+  GuidanceDemo,
+  CFGDemo,
+  AttentionBasics,
+  SelfAttentionViz,
+  ArchitectureComparison,
+  S3DiTDemo,
+  LatentViz,
+  ComputeComparison,
+  DecoderDemo,
+  TeacherStudentDemo,
+  DistributionDemo,
+  DecoupledDemo,
+  FinalQuiz,
 };
 
 interface InteractiveWrapperProps {
