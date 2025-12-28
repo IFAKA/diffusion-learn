@@ -5,6 +5,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { LoadingPlaceholder } from "@/components/ui/spinner";
+import { getLesson, getModule, modules, lessons } from "@/lib/content";
+import { useProgress } from "@/lib/progress-context";
 
 const ChallengeWrapper = dynamic(
   () => import("@/components/challenges/challenge-wrapper").then(m => m.ChallengeWrapper),
@@ -19,12 +21,6 @@ export default function PracticePage({
   const { moduleId, lessonId } = use(params);
   const moduleIdNum = parseInt(moduleId);
   const lessonIdNum = parseInt(lessonId);
-
-  // Import data lazily to avoid Turbopack bundling all at once
-  /* eslint-disable @typescript-eslint/no-require-imports */
-  const { getLesson, getModule, modules, lessons } = require("@/lib/challenges");
-  const { useProgress } = require("@/lib/progress-context");
-  /* eslint-enable @typescript-eslint/no-require-imports */
 
   const challengeContent = getLesson(moduleIdNum, lessonIdNum);
   const lessonModule = getModule(moduleIdNum);

@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Challenge } from "@/lib/types";
+import {
+  useChallenge,
+  SelfAssessment,
+  InsightCard,
+  SubmitButton,
+} from "./challenge-shared";
 
 interface ExplainChallengeProps {
   challenge: Challenge;
@@ -11,35 +17,25 @@ interface ExplainChallengeProps {
 
 export function ExplainChallenge({ challenge, onComplete }: ExplainChallengeProps) {
   const [userAnswer, setUserAnswer] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [hasThought, setHasThought] = useState(false); // Must think before typing
+  const [hasThought, setHasThought] = useState(false);
 
-  const resultRef = useRef<HTMLDivElement>(null);
+  const { submitted, submit, resultRef } = useChallenge();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const minLength = 10;
   const canSubmit = userAnswer.trim().length >= minLength;
 
-  // Focus management after submit
-  useEffect(() => {
-    if (submitted && resultRef.current) {
-      resultRef.current.focus();
-    }
-  }, [submitted]);
-
   const handleSubmit = () => {
     if (canSubmit) {
-      setSubmitted(true);
+      submit();
     }
   };
 
   const startThinking = () => {
     setHasThought(true);
-    // Focus textarea after state update
     setTimeout(() => textareaRef.current?.focus(), 100);
   };
 
-  // Handle Cmd/Ctrl+Enter to submit
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && canSubmit) {
       e.preventDefault();
@@ -136,16 +132,9 @@ export function ExplainChallenge({ challenge, onComplete }: ExplainChallengeProp
       {/* Actions - only show after thinking step */}
       {!submitted && hasThought && (
         <div className="flex items-center gap-3 mt-6">
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            aria-disabled={!canSubmit}
-            className="px-6 py-3 rounded-lg bg-[var(--fg)] text-[var(--bg)] font-medium
-              disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity
-              focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-          >
+          <SubmitButton onClick={handleSubmit} disabled={!canSubmit}>
             Submit
-          </button>
+          </SubmitButton>
         </div>
       )}
 
@@ -186,51 +175,13 @@ export function ExplainChallenge({ challenge, onComplete }: ExplainChallengeProp
             )}
 
             {/* The insight */}
-            <div className="p-6 rounded-lg border border-[var(--success)]/20 bg-[var(--success)]/5">
-              <h3 className="text-sm font-medium text-[var(--success)] uppercase tracking-wider mb-3">
-                The Key Insight
-              </h3>
-              <p className="text-[var(--fg)] leading-relaxed">
-                {challenge.insight}
-              </p>
-            </div>
+            <InsightCard insight={challenge.insight} variant="success" />
 
             {/* Self-assessment */}
-            <div
-              className="pt-4 border-t border-[var(--border)]"
-              role="group"
-              aria-labelledby="self-assessment-explain"
-            >
-              <p id="self-assessment-explain" className="text-sm text-[var(--fg-muted)] mb-3">
-                Compare your explanation to the model answer. Did you capture the core idea?
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => onComplete("yes")}
-                  className="px-4 py-2 rounded-lg bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30
-                    hover:bg-[var(--success)]/20 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">✓ </span>Yes, I got it
-                </button>
-                <button
-                  onClick={() => onComplete("partial")}
-                  className="px-4 py-2 rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/30
-                    hover:bg-[var(--warning)]/20 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--warning)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">◐ </span>Partially
-                </button>
-                <button
-                  onClick={() => onComplete("no")}
-                  className="px-4 py-2 rounded-lg bg-[var(--fg)]/5 text-[var(--fg-muted)] border border-[var(--border)]
-                    hover:bg-[var(--fg)]/10 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">✗ </span>I missed it
-                </button>
-              </div>
-            </div>
+            <SelfAssessment
+              onComplete={onComplete}
+              question="Compare your explanation to the model answer. Did you capture the core idea?"
+            />
           </motion.div>
         )}
       </AnimatePresence>

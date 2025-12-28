@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useProgress } from "@/lib/progress-context";
+import { TOTAL_CHALLENGES, lessons } from "@/lib/content";
 
 export default function HomePage() {
-  /* eslint-disable @typescript-eslint/no-require-imports */
-  const { TOTAL_CHALLENGES, lessons } = require("@/lib/challenges");
-  /* eslint-enable @typescript-eslint/no-require-imports */
 
   const { getPercentComplete, getNextLesson, progress } = useProgress();
   const percent = getPercentComplete();

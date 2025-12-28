@@ -5,15 +5,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useProgress } from "@/lib/progress-context";
 import { notFound } from "next/navigation";
+import { getModule, lessons, modules } from "@/lib/content";
 
 export default function ModulePage({
   params,
 }: {
   params: Promise<{ moduleId: string }>;
 }) {
-  /* eslint-disable @typescript-eslint/no-require-imports */
-  const { getModule, lessons, modules } = require("@/lib/challenges");
-  /* eslint-enable @typescript-eslint/no-require-imports */
 
   const { moduleId } = use(params);
   const moduleIdNum = parseInt(moduleId);

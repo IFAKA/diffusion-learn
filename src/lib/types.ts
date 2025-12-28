@@ -1,4 +1,4 @@
-// Shared types - no data, just type definitions
+// Core types used by content.ts and components
 
 export interface Section {
   type: "text" | "analogy" | "interactive" | "code" | "quickwin" | "diagram";
@@ -8,24 +8,6 @@ export interface Section {
   code?: string;
   language?: string;
   caption?: string;
-}
-
-export interface Lesson {
-  id: string;
-  moduleId: number;
-  lessonNumber: number;
-  title: string;
-  subtitle: string;
-  estimatedTime: string;
-  sections: Section[];
-}
-
-export interface Module {
-  id: number;
-  title: string;
-  description: string;
-  lessonCount: number;
-  icon: string;
 }
 
 export type ChallengeType =
@@ -53,21 +35,4 @@ export interface Challenge {
   insight: string;
   modelAnswer?: string;
   misconceptions?: string[];
-}
-
-export interface ChallengeLesson {
-  id: string;
-  moduleId: number;
-  lessonNumber: number;
-  title: string;
-  subtitle: string;
-  challenges: Challenge[];
-  transferQuestion?: Challenge;
-}
-
-export interface ChallengeModule {
-  id: number;
-  title: string;
-  description: string;
-  coreConcepts: string[];
 }

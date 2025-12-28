@@ -1,8 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Challenge } from "@/lib/types";
+import {
+  useChallenge,
+  SelfAssessment,
+  HintsList,
+  HintButton,
+  InsightCard,
+  SubmitButton,
+  ResultIcon,
+} from "./challenge-shared";
 
 interface PredictChallengeProps {
   challenge: Challenge;
@@ -12,31 +21,17 @@ interface PredictChallengeProps {
 export function PredictChallenge({ challenge, onComplete }: PredictChallengeProps) {
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-  const [hintsShown, setHintsShown] = useState(0);
+
+  const { submitted, submit, hintsShown, showNextHint, hasMoreHints, resultRef } = useChallenge({
+    hintCount: challenge.hints.length,
+  });
 
   const choicesRef = useRef<(HTMLButtonElement | null)[]>([]);
-  const resultRef = useRef<HTMLDivElement>(null);
-  const assessmentRef = useRef<HTMLButtonElement>(null);
-
   const choices = useMemo(() => challenge.choices || [], [challenge.choices]);
-
-  // Focus management after submit
-  useEffect(() => {
-    if (submitted && resultRef.current) {
-      resultRef.current.focus();
-    }
-  }, [submitted]);
 
   const handleSubmit = () => {
     if (selectedChoice || choices.length === 0) {
-      setSubmitted(true);
-    }
-  };
-
-  const showNextHint = () => {
-    if (hintsShown < challenge.hints.length) {
-      setHintsShown(hintsShown + 1);
+      submit();
     }
   };
 
@@ -67,9 +62,7 @@ export function PredictChallenge({ challenge, onComplete }: PredictChallengeProp
     }
   }, [choices]);
 
-  const selectedIsCorrect = choices.find(
-    c => c.id === selectedChoice
-  )?.isCorrect;
+  const selectedIsCorrect = choices.find(c => c.id === selectedChoice)?.isCorrect;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -141,49 +134,25 @@ export function PredictChallenge({ challenge, onComplete }: PredictChallengeProp
       )}
 
       {/* Hints */}
-      {!submitted && hintsShown > 0 && (
-        <div className="mb-6 space-y-2" role="list" aria-label="Hints">
-          {challenge.hints.slice(0, hintsShown).map((hint, i) => (
-            <motion.div
-              key={i}
-              role="listitem"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-dashed border-[var(--border)]"
-            >
-              <p className="text-sm text-[var(--fg-muted)]">
-                <span className="text-[var(--fg-secondary)]">Hint {i + 1}:</span> {hint}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      )}
+      {!submitted && <HintsList hints={challenge.hints} hintsShown={hintsShown} />}
 
       {/* Actions */}
       {!submitted && (
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <button
+            <SubmitButton
               onClick={handleSubmit}
               disabled={choices.length > 0 && !selectedChoice}
-              aria-disabled={choices.length > 0 && !selectedChoice}
-              className="px-6 py-3 rounded-lg bg-[var(--fg)] text-[var(--bg)] font-medium
-                disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity
-                focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
             >
               {choices.length > 0 ? "Submit Answer" : "Reveal Insight"}
-            </button>
-          {hintsShown < challenge.hints.length && (
-            <button
-              onClick={showNextHint}
-              aria-label={`Show hint ${hintsShown + 1} of ${challenge.hints.length}`}
-              className="px-4 py-3 rounded-lg border border-[var(--border)] text-[var(--fg-muted)]
-                hover:text-[var(--fg)] hover:border-[var(--border-hover)] transition-colors
-                focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-            >
-              Hint ({hintsShown}/{challenge.hints.length})
-            </button>
-          )}
+            </SubmitButton>
+            {hasMoreHints && (
+              <HintButton
+                hintsShown={hintsShown}
+                totalHints={challenge.hints.length}
+                onShowHint={showNextHint}
+              />
+            )}
           </div>
           {choices.length > 0 && !selectedChoice && (
             <p className="text-xs text-[var(--fg-muted)]" aria-live="polite">
@@ -220,30 +189,7 @@ export function PredictChallenge({ challenge, onComplete }: PredictChallengeProp
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  {selectedIsCorrect ? (
-                    <svg
-                      className="w-5 h-5 text-[var(--success)]"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      aria-hidden="true"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-5 h-5 text-[var(--error)]"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      aria-hidden="true"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  )}
+                  <ResultIcon correct={!!selectedIsCorrect} />
                   <span className={`text-sm font-medium ${
                     selectedIsCorrect ? "text-[var(--success)]" : "text-[var(--error)]"
                   }`}>
@@ -257,14 +203,7 @@ export function PredictChallenge({ challenge, onComplete }: PredictChallengeProp
             )}
 
             {/* The insight */}
-            <div className="p-6 rounded-lg border border-[var(--fg)]/20 bg-[var(--bg-secondary)]">
-              <h3 className="text-sm font-medium text-[var(--fg-muted)] uppercase tracking-wider mb-3">
-                The Insight
-              </h3>
-              <p className="text-[var(--fg)] leading-relaxed">
-                {challenge.insight}
-              </p>
-            </div>
+            <InsightCard insight={challenge.insight} />
 
             {/* Misconceptions */}
             {challenge.misconceptions && challenge.misconceptions.length > 0 && (
@@ -284,42 +223,7 @@ export function PredictChallenge({ challenge, onComplete }: PredictChallengeProp
             )}
 
             {/* Self-assessment */}
-            <div
-              className="pt-4 border-t border-[var(--border)]"
-              role="group"
-              aria-labelledby="self-assessment-label"
-            >
-              <p id="self-assessment-label" className="text-sm text-[var(--fg-muted)] mb-3">
-                Did you understand the core idea?
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  ref={assessmentRef}
-                  onClick={() => onComplete("yes")}
-                  className="px-4 py-2 rounded-lg bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30
-                    hover:bg-[var(--success)]/20 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">✓ </span>Yes, got it
-                </button>
-                <button
-                  onClick={() => onComplete("partial")}
-                  className="px-4 py-2 rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/30
-                    hover:bg-[var(--warning)]/20 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--warning)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">◐ </span>Partially
-                </button>
-                <button
-                  onClick={() => onComplete("no")}
-                  className="px-4 py-2 rounded-lg bg-[var(--fg)]/5 text-[var(--fg-muted)] border border-[var(--border)]
-                    hover:bg-[var(--fg)]/10 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">✗ </span>Not really
-                </button>
-              </div>
-            </div>
+            <SelfAssessment onComplete={onComplete} />
           </motion.div>
         )}
       </AnimatePresence>

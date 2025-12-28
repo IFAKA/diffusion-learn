@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Challenge, Choice } from "@/lib/types";
+import {
+  useChallenge,
+  SelfAssessment,
+  HintsList,
+  HintButton,
+  InsightCard,
+  SubmitButton,
+  ResultIcon,
+} from "./challenge-shared";
 
 interface BuildChallengeProps {
   challenge: Challenge;
   onComplete: (understood: "yes" | "partial" | "no") => void;
 }
 
-// Shuffle function that runs once per challenge
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -20,36 +28,18 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
-  // Use a lazy initializer to shuffle once on mount
   const [items, setItems] = useState<Choice[]>(() =>
     challenge.choices ? shuffleArray(challenge.choices) : []
   );
-  const [submitted, setSubmitted] = useState(false);
-  const [hintsShown, setHintsShown] = useState(0);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [announcement, setAnnouncement] = useState("");
 
+  const { submitted, submit, hintsShown, showNextHint, hasMoreHints, resultRef } = useChallenge({
+    hintCount: challenge.hints.length,
+  });
+
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const resultRef = useRef<HTMLDivElement>(null);
 
-  // Focus management after submit
-  useEffect(() => {
-    if (submitted && resultRef.current) {
-      resultRef.current.focus();
-    }
-  }, [submitted]);
-
-  const handleSubmit = () => {
-    setSubmitted(true);
-  };
-
-  const showNextHint = () => {
-    if (hintsShown < challenge.hints.length) {
-      setHintsShown(hintsShown + 1);
-    }
-  };
-
-  // Move item up or down
   const moveItem = useCallback((fromIndex: number, direction: "up" | "down") => {
     const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
     if (toIndex < 0 || toIndex >= items.length) return;
@@ -59,26 +49,20 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
     newItems.splice(toIndex, 0, movedItem);
     setItems(newItems);
     setFocusedIndex(toIndex);
-
-    // Announce for screen readers
     setAnnouncement(`${movedItem.text} moved to position ${toIndex + 1}`);
 
-    // Focus the moved item
     setTimeout(() => {
       itemRefs.current[toIndex]?.focus();
     }, 0);
   }, [items]);
 
-  // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent, index: number) => {
     switch (e.key) {
       case "ArrowUp":
         e.preventDefault();
         if (e.altKey || e.metaKey) {
-          // Alt+Up = move item up
           moveItem(index, "up");
         } else {
-          // Just Up = focus previous
           const prevIndex = Math.max(0, index - 1);
           setFocusedIndex(prevIndex);
           itemRefs.current[prevIndex]?.focus();
@@ -87,10 +71,8 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
       case "ArrowDown":
         e.preventDefault();
         if (e.altKey || e.metaKey) {
-          // Alt+Down = move item down
           moveItem(index, "down");
         } else {
-          // Just Down = focus next
           const nextIndex = Math.min(items.length - 1, index + 1);
           setFocusedIndex(nextIndex);
           itemRefs.current[nextIndex]?.focus();
@@ -98,7 +80,6 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
         break;
       case " ":
         e.preventDefault();
-        // Space could toggle "grabbed" state for keyboard reordering
         setAnnouncement(`${items[index].text} at position ${index + 1}. Use Alt+Arrow keys to move.`);
         break;
     }
@@ -175,7 +156,6 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  {/* Position number */}
                   <div
                     className="w-6 h-6 rounded bg-[var(--bg)] border border-[var(--border)]
                       flex items-center justify-center text-sm font-mono text-[var(--fg-muted)] flex-shrink-0"
@@ -183,11 +163,7 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
                   >
                     {index + 1}
                   </div>
-
-                  {/* Item text */}
                   <span className="text-[var(--fg-secondary)] flex-1">{item.text}</span>
-
-                  {/* Move buttons */}
                   <div className="flex gap-1 flex-shrink-0">
                     <button
                       type="button"
@@ -226,45 +202,20 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
       )}
 
       {/* Hints */}
-      {!submitted && hintsShown > 0 && (
-        <div className="mb-6 space-y-2" role="list" aria-label="Hints">
-          {challenge.hints.slice(0, hintsShown).map((hint, i) => (
-            <motion.div
-              key={i}
-              role="listitem"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 rounded-lg bg-[var(--bg-elevated)] border border-dashed border-[var(--border)]"
-            >
-              <p className="text-sm text-[var(--fg-muted)]">
-                <span className="text-[var(--fg-secondary)]">Hint {i + 1}:</span> {hint}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      )}
+      {!submitted && <HintsList hints={challenge.hints} hintsShown={hintsShown} />}
 
       {/* Actions */}
       {!submitted && (
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-3 rounded-lg bg-[var(--fg)] text-[var(--bg)] font-medium
-              hover:opacity-90 transition-opacity
-              focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-          >
+          <SubmitButton onClick={submit}>
             Check Order
-          </button>
-          {hintsShown < challenge.hints.length && (
-            <button
-              onClick={showNextHint}
-              aria-label={`Show hint ${hintsShown + 1} of ${challenge.hints.length}`}
-              className="px-4 py-3 rounded-lg border border-[var(--border)] text-[var(--fg-muted)]
-                hover:text-[var(--fg)] hover:border-[var(--border-hover)] transition-colors
-                focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-            >
-              Hint ({hintsShown}/{challenge.hints.length})
-            </button>
+          </SubmitButton>
+          {hasMoreHints && (
+            <HintButton
+              hintsShown={hintsShown}
+              totalHints={challenge.hints.length}
+              onShowHint={showNextHint}
+            />
           )}
         </div>
       )}
@@ -292,9 +243,7 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
               <div className="flex items-center gap-2">
                 {isCorrect ? (
                   <>
-                    <svg className="w-5 h-5 text-[var(--success)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
+                    <ResultIcon correct={true} />
                     <span className="font-medium text-[var(--success)]">Perfect order!</span>
                   </>
                 ) : (
@@ -330,16 +279,7 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
                             : "border-[var(--error)]/30 bg-[var(--error)]/5 text-[var(--error)]"
                         }`}
                       >
-                        {isInRightPlace ? (
-                          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
-                        )}
+                        <ResultIcon correct={isInRightPlace} className="w-4 h-4 flex-shrink-0" />
                         <span>{index + 1}. {item.text}</span>
                         <span
                           className="absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0"
@@ -373,51 +313,13 @@ export function BuildChallenge({ challenge, onComplete }: BuildChallengeProps) {
             </div>
 
             {/* The insight */}
-            <div className="p-6 rounded-lg border border-[var(--success)]/20 bg-[var(--success)]/5">
-              <h3 className="text-sm font-medium text-[var(--success)] uppercase tracking-wider mb-3">
-                The Insight
-              </h3>
-              <p className="text-[var(--fg)] leading-relaxed">
-                {challenge.insight}
-              </p>
-            </div>
+            <InsightCard insight={challenge.insight} variant="success" />
 
             {/* Self-assessment */}
-            <div
-              className="pt-4 border-t border-[var(--border)]"
-              role="group"
-              aria-labelledby="self-assessment-build"
-            >
-              <p id="self-assessment-build" className="text-sm text-[var(--fg-muted)] mb-3">
-                Do you understand why this order is correct?
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => onComplete("yes")}
-                  className="px-4 py-2 rounded-lg bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30
-                    hover:bg-[var(--success)]/20 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">✓ </span>Yes, makes sense
-                </button>
-                <button
-                  onClick={() => onComplete("partial")}
-                  className="px-4 py-2 rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/30
-                    hover:bg-[var(--warning)]/20 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--warning)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">◐ </span>Partially
-                </button>
-                <button
-                  onClick={() => onComplete("no")}
-                  className="px-4 py-2 rounded-lg bg-[var(--fg)]/5 text-[var(--fg-muted)] border border-[var(--border)]
-                    hover:bg-[var(--fg)]/10 transition-colors
-                    focus:outline-none focus:ring-2 focus:ring-[var(--fg)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
-                >
-                  <span aria-hidden="true">✗ </span>Still confused
-                </button>
-              </div>
-            </div>
+            <SelfAssessment
+              onComplete={onComplete}
+              question="Do you understand why this order is correct?"
+            />
           </motion.div>
         )}
       </AnimatePresence>

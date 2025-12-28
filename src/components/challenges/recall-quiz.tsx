@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Challenge } from "@/lib/types";
 import { useProgress } from "@/lib/progress-context";
+import { InsightCard } from "./challenge-shared";
 
 interface RecallQuizProps {
   challenges: Challenge[];
@@ -88,12 +89,7 @@ export function RecallQuiz({ challenges, onComplete }: RecallQuizProps) {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              <div className="p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
-                <p className="text-sm text-[var(--fg-muted)] uppercase tracking-wider mb-2">
-                  Key Insight
-                </p>
-                <p className="text-[var(--fg)]">{currentChallenge.insight}</p>
-              </div>
+              <InsightCard insight={currentChallenge.insight} />
 
               <div>
                 <p className="text-sm text-[var(--fg-muted)] mb-2">

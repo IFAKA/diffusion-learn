@@ -3,9 +3,8 @@
 import { use } from "react";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-
-// Lazy load heavy modules
 import dynamic from "next/dynamic";
+import { getLesson, getModule, modules, lessons } from "@/lib/content";
 
 const LessonContent = dynamic(() => import("@/components/learn/lesson-content"), {
   loading: () => (
@@ -25,27 +24,21 @@ export default function LessonPage({
   const moduleIdNum = parseInt(moduleId);
   const lessonIdNum = parseInt(lessonId);
 
-  // Import data lazily inside component to avoid Turbopack bundling all at once
-  /* eslint-disable @typescript-eslint/no-require-imports */
-  const { getLesson: getVisualLesson, getModule: getVisualModule } = require("@/lib/lessons");
-  const { getLesson: getChallengeLesson, getModule: getChallengeModule, modules: challengeModules, lessons: challengeLessons } = require("@/lib/challenges");
-  /* eslint-enable @typescript-eslint/no-require-imports */
+  const lesson = getLesson(moduleIdNum, lessonIdNum);
+  const lessonModule = getModule(moduleIdNum);
 
-  const visualContent = getVisualLesson(moduleIdNum, lessonIdNum);
-  const challengeContent = getChallengeLesson(moduleIdNum, lessonIdNum);
-  const lessonModule = getChallengeModule(moduleIdNum) || getVisualModule(moduleIdNum);
-
-  if (!lessonModule || (!visualContent && !challengeContent)) {
+  if (!lessonModule || !lesson) {
     notFound();
   }
 
-  if (!visualContent && challengeContent) {
+  // If no visual content (sections), redirect to practice
+  if (lesson.sections.length === 0 && lesson.challenges.length > 0) {
     redirect(`/learn/${moduleIdNum}/${lessonIdNum}/practice`);
   }
 
-  const lessonTitle = visualContent?.title || challengeContent?.title;
-  const lessonSubtitle = visualContent?.subtitle || challengeContent?.subtitle;
-  const hasChallenges = !!challengeContent;
+  const lessonTitle = lesson.title;
+  const lessonSubtitle = lesson.subtitle;
+  const hasChallenges = lesson.challenges.length > 0;
 
   let nextStepLink: string | null = null;
   let nextStepLabel = "Next Lesson";
@@ -54,12 +47,12 @@ export default function LessonPage({
     nextStepLink = `/learn/${moduleIdNum}/${lessonIdNum}/practice`;
     nextStepLabel = "Continue to Practice";
   } else {
-    const moduleLessons = (Object.values(challengeLessons) as { moduleId: number }[]).filter(
+    const moduleLessons = (Object.values(lessons) as { moduleId: number }[]).filter(
       (l) => l.moduleId === moduleIdNum
     );
     if (lessonIdNum < moduleLessons.length) {
       nextStepLink = `/learn/${moduleIdNum}/${lessonIdNum + 1}`;
-    } else if (moduleIdNum < challengeModules.length) {
+    } else if (moduleIdNum < modules.length) {
       nextStepLink = `/learn/${moduleIdNum + 1}/1`;
     }
   }
@@ -81,14 +74,14 @@ export default function LessonPage({
       <header className="mb-8">
         <p className="text-xs font-mono text-[var(--fg-muted)] uppercase tracking-wider mb-2">
           Lesson {lessonIdNum}
-          {visualContent?.estimatedTime && ` • ${visualContent.estimatedTime}`}
+          {lesson.estimatedTime && ` • ${lesson.estimatedTime}`}
         </p>
         <h1 className="text-2xl font-bold text-[var(--fg)] mb-2">{lessonTitle}</h1>
         <p className="text-[var(--fg-secondary)]">{lessonSubtitle}</p>
       </header>
 
       {/* Content */}
-      {visualContent && <LessonContent sections={visualContent.sections} />}
+      {lesson.sections.length > 0 && <LessonContent sections={lesson.sections} />}
 
       {/* Next button */}
       {nextStepLink && (

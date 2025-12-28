@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { modules, lessons, TOTAL_CHALLENGES, Challenge } from "./challenges";
+import { modules, lessons, TOTAL_CHALLENGES } from "./content";
+import type { Challenge } from "./types";
 
 interface ChallengeResult {
   challengeId: string;

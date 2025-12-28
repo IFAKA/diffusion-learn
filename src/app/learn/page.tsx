@@ -6,6 +6,7 @@ import { useProgress } from "@/lib/progress-context";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { LoadingPlaceholder } from "@/components/ui/spinner";
+import { modules, lessons } from "@/lib/content";
 
 const RecallQuiz = dynamic(
   () => import("@/components/challenges/recall-quiz").then(m => m.RecallQuiz),
@@ -13,9 +14,6 @@ const RecallQuiz = dynamic(
 );
 
 export default function LearnPage() {
-  /* eslint-disable @typescript-eslint/no-require-imports */
-  const { modules, lessons } = require("@/lib/challenges");
-  /* eslint-enable @typescript-eslint/no-require-imports */
 
   const {
     getPercentComplete,
