@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useProgress } from "@/lib/progress-context";
-import { TOTAL_CHALLENGES, lessons } from "@/lib/challenges";
 
 export default function HomePage() {
+  /* eslint-disable @typescript-eslint/no-require-imports */
+  const { TOTAL_CHALLENGES, lessons } = require("@/lib/challenges");
+  /* eslint-enable @typescript-eslint/no-require-imports */
+
   const { getPercentComplete, getNextLesson, progress } = useProgress();
   const percent = getPercentComplete();
   const nextLesson = getNextLesson();
@@ -25,7 +28,7 @@ export default function HomePage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] mb-8">
             <div className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
             <span className="text-xs text-[var(--fg-muted)]">
-              ADHD-friendly learning
+              Learn by doing
             </span>
           </div>
 
@@ -36,8 +39,7 @@ export default function HomePage() {
 
           {/* Subtitle */}
           <p className="text-lg text-[var(--fg-secondary)] mb-8 max-w-lg mx-auto">
-            Understand AI image generation from scratch. Built for web developers
-            with zero ML background.
+            Understand AI image generation from scratch. No ML background required.
           </p>
 
           {/* Stats */}

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Module } from "@/lib/lessons";
+import { Module } from "@/lib/types";
 import { useProgress } from "@/lib/progress-context";
 
 const icons: Record<string, React.ReactNode> = {

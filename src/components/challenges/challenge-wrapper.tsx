@@ -1,6 +1,6 @@
 "use client";
 
-import { Challenge } from "@/lib/challenges";
+import { Challenge } from "@/lib/types";
 import { PredictChallenge } from "./predict-challenge";
 import { ExplainChallenge } from "./explain-challenge";
 import { BuildChallenge } from "./build-challenge";

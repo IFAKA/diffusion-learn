@@ -2,12 +2,21 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { modules, lessons } from "@/lib/challenges";
 import { useProgress } from "@/lib/progress-context";
-import { RecallQuiz } from "@/components/challenges/recall-quiz";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import { LoadingPlaceholder } from "@/components/ui/spinner";
+
+const RecallQuiz = dynamic(
+  () => import("@/components/challenges/recall-quiz").then(m => m.RecallQuiz),
+  { loading: () => <LoadingPlaceholder />, ssr: false }
+);
 
 export default function LearnPage() {
+  /* eslint-disable @typescript-eslint/no-require-imports */
+  const { modules, lessons } = require("@/lib/challenges");
+  /* eslint-enable @typescript-eslint/no-require-imports */
+
   const {
     getPercentComplete,
     getUnderstandingScore,
@@ -129,8 +138,9 @@ export default function LearnPage() {
 
       {/* Module grid */}
       <div className="grid gap-4">
-        {modules.map((module, index) => {
-          const moduleLessons = Object.values(lessons).filter(l => l.moduleId === module.id);
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {(modules as any[]).map((module, index) => {
+          const moduleLessons = (Object.values(lessons) as any[]).filter((l: any) => l.moduleId === module.id);
           const totalChallenges = moduleLessons.reduce((sum, l) =>
             sum + l.challenges.length + (l.transferQuestion ? 1 : 0), 0
           );

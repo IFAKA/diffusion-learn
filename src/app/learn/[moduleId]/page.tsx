@@ -3,7 +3,6 @@
 import { use } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { getModule, lessons, modules } from "@/lib/challenges";
 import { useProgress } from "@/lib/progress-context";
 import { notFound } from "next/navigation";
 
@@ -12,10 +11,15 @@ export default function ModulePage({
 }: {
   params: Promise<{ moduleId: string }>;
 }) {
+  /* eslint-disable @typescript-eslint/no-require-imports */
+  const { getModule, lessons, modules } = require("@/lib/challenges");
+  /* eslint-enable @typescript-eslint/no-require-imports */
+
   const { moduleId } = use(params);
   const moduleIdNum = parseInt(moduleId);
   const currentModule = getModule(moduleIdNum);
-  const moduleLessons = Object.values(lessons).filter(l => l.moduleId === moduleIdNum);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const moduleLessons = (Object.values(lessons) as any[]).filter(l => l.moduleId === moduleIdNum);
   const { isLessonCompleted, isChallengeCompleted } = useProgress();
 
   if (!currentModule) {
@@ -87,7 +91,7 @@ export default function ModulePage({
           What you&apos;ll understand after this module
         </h2>
         <ul className="space-y-2">
-          {currentModule.coreConcepts.map((concept, index) => (
+          {currentModule.coreConcepts.map((concept: string, index: number) => (
             <motion.li
               key={index}
               initial={{ opacity: 0, x: -10 }}

@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Learn Diffusion Models",
-  description: "An ADHD-friendly interactive guide to understanding AI image generation",
+  description: "An interactive hands-on guide to understanding AI image generation",
 };
 
 export default function RootLayout({

@@ -1,8 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Section } from "@/lib/lessons";
-import { InteractiveWrapper } from "@/components/interactive/interactive-wrapper";
+import dynamic from "next/dynamic";
+import { Section } from "@/lib/types";
+import { LoadingPlaceholder } from "@/components/ui/spinner";
+
+const InteractiveWrapper = dynamic(
+  () => import("@/components/interactive/interactive-wrapper").then(m => m.InteractiveWrapper),
+  { loading: () => <LoadingPlaceholder />, ssr: false }
+);
 
 interface LessonSectionProps {
   section: Section;

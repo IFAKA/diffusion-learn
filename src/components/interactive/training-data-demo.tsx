@@ -129,14 +129,14 @@ export function TrainingDataDemo() {
           <span className="text-xs text-[var(--fg-muted)] uppercase tracking-wider">Model Knowledge</span>
           <span className="text-xs text-[var(--fg-muted)]">{learnedFeatures.size} patterns learned</span>
         </div>
-        <div className="flex flex-wrap gap-1 min-h-[60px]">
+        <div className="flex flex-wrap items-start content-start gap-1.5 min-h-[60px]">
           <AnimatePresence>
             {Array.from(learnedFeatures).map((feature) => (
               <motion.span
                 key={feature}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="px-2 py-1 text-xs rounded-full bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--fg-secondary)]"
+                className="px-2.5 py-1 text-xs leading-none rounded-full bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--fg-secondary)]"
               >
                 {feature}
               </motion.span>

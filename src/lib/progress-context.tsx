@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { modules, lessons, TOTAL_CHALLENGES, Challenge } from "./challenges";
 
 interface ChallengeResult {
@@ -73,17 +73,21 @@ function loadProgressFromStorage(): Progress {
 }
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
-  const [progress, setProgress] = useState<Progress>(loadProgressFromStorage);
-  const isFirstRender = useRef(true);
+  // Start with default to avoid hydration mismatch
+  const [progress, setProgress] = useState<Progress>(defaultProgress);
+  const [hydrated, setHydrated] = useState(false);
 
-  // Save to localStorage on change (skip first render to avoid hydration issues)
+  // Load from localStorage after mount
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    setProgress(loadProgressFromStorage());
+    setHydrated(true);
+  }, []);
+
+  // Save to localStorage on change (only after hydration)
+  useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
+  }, [progress, hydrated]);
 
   const completeChallenge = (challengeId: string, understood: "yes" | "partial" | "no") => {
     const now = new Date();

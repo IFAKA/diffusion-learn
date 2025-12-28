@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Challenge } from "@/lib/challenges";
+import { Challenge } from "@/lib/types";
 import { useProgress } from "@/lib/progress-context";
 
 interface RecallQuizProps {

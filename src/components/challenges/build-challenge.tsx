@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Challenge, Choice } from "@/lib/challenges";
+import { Challenge, Choice } from "@/lib/types";
 
 interface BuildChallengeProps {
   challenge: Challenge;

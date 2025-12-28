@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useProgress } from "@/lib/progress-context";
 import { usePathname } from "next/navigation";
@@ -8,8 +9,13 @@ import { motion } from "framer-motion";
 export function Header() {
   const { getPercentComplete } = useProgress();
   const pathname = usePathname();
-  const percent = getPercentComplete();
   const isHome = pathname === "/";
+
+  // Avoid hydration mismatch - localStorage only exists on client
+  const [percent, setPercent] = useState(0);
+  useEffect(() => {
+    setPercent(getPercentComplete());
+  }, [getPercentComplete]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md">

@@ -74,7 +74,7 @@ export function ForwardProcess() {
           }
           return prev + 1;
         });
-      }, 500);
+      }, 1200);
       return () => clearInterval(interval);
     }
   }, [isPlaying]);

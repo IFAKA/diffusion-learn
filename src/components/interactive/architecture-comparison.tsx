@@ -115,7 +115,7 @@ export function ArchitectureComparison() {
                     key={i}
                     initial={{ width: 0 }}
                     animate={{ width: `${layer.width}%` }}
-                    transition={{ delay: i * 0.1 }}
+                    transition={{ delay: i * 0.35, duration: 0.6 }}
                     className="h-6 rounded flex items-center px-2"
                     style={{
                       backgroundColor: archKey === "unet"
