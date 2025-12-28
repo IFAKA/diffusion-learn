@@ -3,9 +3,11 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { getLesson, getModule, modules, lessons } from "@/lib/challenges";
-import { useProgress } from "@/lib/progress-context";
+import { getLesson as getVisualLesson, getModule as getVisualModule } from "@/lib/lessons";
+import { getLesson as getChallengeLesson, getModule as getChallengeModule, modules as challengeModules, lessons as challengeLessons } from "@/lib/challenges";
+import { LessonSection } from "@/components/learn/lesson-section";
 import { ChallengeWrapper } from "@/components/challenges/challenge-wrapper";
+import { useProgress } from "@/lib/progress-context";
 import { notFound } from "next/navigation";
 
 export default function LessonPage({
@@ -17,30 +19,40 @@ export default function LessonPage({
   const moduleIdNum = parseInt(moduleId);
   const lessonIdNum = parseInt(lessonId);
 
-  const lesson = getLesson(moduleIdNum, lessonIdNum);
-  const lessonModule = getModule(moduleIdNum);
-  const { completeChallenge, completeLesson, isChallengeCompleted, isLessonCompleted } = useProgress();
+  // Load from both systems
+  const visualContent = getVisualLesson(moduleIdNum, lessonIdNum);
+  const challengeContent = getChallengeLesson(moduleIdNum, lessonIdNum);
 
+  // Use challenge module as primary (has 8 modules), fall back to visual module
+  const lessonModule = getChallengeModule(moduleIdNum) || getVisualModule(moduleIdNum);
+
+  // Get lesson metadata from whichever exists
+  const lessonTitle = visualContent?.title || challengeContent?.title;
+  const lessonSubtitle = visualContent?.subtitle || challengeContent?.subtitle;
+
+  const { completeChallenge, completeLesson, isChallengeCompleted, isLessonCompleted } = useProgress();
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
-  if (!lesson || !lessonModule) {
+  // If neither exists, 404
+  if (!lessonModule || (!visualContent && !challengeContent)) {
     notFound();
   }
 
-  const allChallenges = [
-    ...lesson.challenges,
-    ...(lesson.transferQuestion ? [lesson.transferQuestion] : []),
-  ];
+  // Calculate challenges if they exist
+  const allChallenges = challengeContent ? [
+    ...challengeContent.challenges,
+    ...(challengeContent.transferQuestion ? [challengeContent.transferQuestion] : []),
+  ] : [];
 
   const currentChallenge = allChallenges[currentChallengeIndex];
   const isLastChallenge = currentChallengeIndex === allChallenges.length - 1;
-  const lessonComplete = isLessonCompleted(lesson.id);
+  const lessonComplete = challengeContent ? isLessonCompleted(challengeContent.id) : false;
 
-  // Calculate navigation
-  const moduleLessons = Object.values(lessons).filter(l => l.moduleId === moduleIdNum);
+  // Calculate navigation using challenge lessons (more complete)
+  const moduleLessons = Object.values(challengeLessons).filter(l => l.moduleId === moduleIdNum);
   const hasNextLesson = lessonIdNum < moduleLessons.length;
   const hasPrevLesson = lessonIdNum > 1;
-  const hasNextModule = moduleIdNum < modules.length;
+  const hasNextModule = moduleIdNum < challengeModules.length;
   const hasPrevModule = moduleIdNum > 1;
 
   const nextLink = hasNextLesson
@@ -53,17 +65,18 @@ export default function LessonPage({
     ? `/learn/${moduleIdNum}/${lessonIdNum - 1}`
     : hasPrevModule
     ? `/learn/${moduleIdNum - 1}/${
-        Object.values(lessons).filter(l => l.moduleId === moduleIdNum - 1).length
+        Object.values(challengeLessons).filter(l => l.moduleId === moduleIdNum - 1).length
       }`
     : null;
 
   const handleChallengeComplete = (understood: "yes" | "partial" | "no") => {
+    if (!challengeContent || !currentChallenge) return;
+
     completeChallenge(currentChallenge.id, understood);
 
     if (isLastChallenge) {
-      completeLesson(lesson.id);
+      completeLesson(challengeContent.id);
     } else {
-      // Move to next challenge after a short delay
       setTimeout(() => {
         setCurrentChallengeIndex(currentChallengeIndex + 1);
       }, 500);
@@ -85,7 +98,7 @@ export default function LessonPage({
           {lessonModule.title}
         </Link>
         <span>/</span>
-        <span className="text-[var(--fg)]">{lesson.title}</span>
+        <span className="text-[var(--fg)]">{lessonTitle}</span>
       </div>
 
       {/* Header */}
@@ -96,18 +109,12 @@ export default function LessonPage({
       >
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-mono text-[var(--fg-muted)] uppercase tracking-wider">
-            Lesson {lessonIdNum} • Challenge {currentChallengeIndex + 1} of {allChallenges.length}
+            Lesson {lessonIdNum}
+            {visualContent?.estimatedTime && ` • ${visualContent.estimatedTime}`}
           </span>
           {lessonComplete && (
             <span className="text-xs text-[var(--success)] flex items-center gap-1">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
               Completed
@@ -115,61 +122,86 @@ export default function LessonPage({
           )}
         </div>
         <h1 className="text-2xl font-bold text-[var(--fg)] mb-2">
-          {lesson.title}
+          {lessonTitle}
         </h1>
-        <p className="text-[var(--fg-secondary)]">{lesson.subtitle}</p>
+        <p className="text-[var(--fg-secondary)]">{lessonSubtitle}</p>
       </motion.header>
 
-      {/* Challenge progress dots */}
-      <div className="flex items-center gap-2 mb-8">
-        {allChallenges.map((challenge, index) => {
-          const isCompleted = isChallengeCompleted(challenge.id);
-          const isCurrent = index === currentChallengeIndex;
+      {/* SECTION 1: Interactive Visualizations (if exists) */}
+      {visualContent && (
+        <div className="space-y-6 mb-12">
+          {visualContent.sections.map((section, index) => (
+            <LessonSection key={index} section={section} index={index} />
+          ))}
+        </div>
+      )}
 
-          return (
-            <button
-              key={challenge.id}
-              onClick={() => setCurrentChallengeIndex(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                isCompleted
-                  ? "bg-[var(--success)]"
-                  : isCurrent
-                  ? "bg-[var(--fg)] scale-125"
-                  : "bg-[var(--border)]"
-              }`}
-              title={`Challenge ${index + 1}`}
-            />
-          );
-        })}
-        {lesson.transferQuestion && (
-          <span className="text-xs text-[var(--fg-muted)] ml-2">+ Transfer</span>
-        )}
-      </div>
-
-      {/* Current challenge */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentChallenge.id}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {/* Transfer question badge */}
-          {lesson.transferQuestion && currentChallenge.id === lesson.transferQuestion.id && (
-            <div className="mb-6 p-3 rounded-lg bg-[var(--warning)]/10 border border-[var(--warning)]/30">
-              <p className="text-sm text-[var(--warning)]">
-                <strong>Transfer Challenge:</strong> Apply what you learned to a new situation.
+      {/* SECTION 2: Challenges (if exists) */}
+      {challengeContent && allChallenges.length > 0 && (
+        <div className="mt-8">
+          {/* Divider if we had visualizations above */}
+          {visualContent && (
+            <div className="mb-8 pt-8 border-t border-[var(--border)]">
+              <h2 className="text-lg font-semibold text-[var(--fg)] mb-2">
+                Practice
+              </h2>
+              <p className="text-sm text-[var(--fg-muted)]">
+                Test your understanding with these challenges
               </p>
             </div>
           )}
 
-          <ChallengeWrapper
-            challenge={currentChallenge}
-            onComplete={handleChallengeComplete}
-          />
-        </motion.div>
-      </AnimatePresence>
+          {/* Challenge progress dots */}
+          <div className="flex items-center gap-2 mb-6">
+            {allChallenges.map((challenge, index) => {
+              const isCompleted = isChallengeCompleted(challenge.id);
+              const isCurrent = index === currentChallengeIndex;
+
+              return (
+                <button
+                  key={challenge.id}
+                  onClick={() => setCurrentChallengeIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    isCompleted
+                      ? "bg-[var(--success)]"
+                      : isCurrent
+                      ? "bg-[var(--fg)] scale-125"
+                      : "bg-[var(--border)]"
+                  }`}
+                  title={`Challenge ${index + 1}`}
+                />
+              );
+            })}
+            {challengeContent.transferQuestion && (
+              <span className="text-xs text-[var(--fg-muted)] ml-2">+ Transfer</span>
+            )}
+          </div>
+
+          {/* Current challenge */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentChallenge.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {challengeContent.transferQuestion && currentChallenge.id === challengeContent.transferQuestion.id && (
+                <div className="mb-6 p-3 rounded-lg bg-[var(--warning)]/10 border border-[var(--warning)]/30">
+                  <p className="text-sm text-[var(--warning)]">
+                    <strong>Transfer Challenge:</strong> Apply what you learned to a new situation.
+                  </p>
+                </div>
+              )}
+
+              <ChallengeWrapper
+                challenge={currentChallenge}
+                onComplete={handleChallengeComplete}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Lesson complete state */}
       <AnimatePresence>
@@ -193,7 +225,7 @@ export default function LessonPage({
               Lesson Complete
             </h3>
             <p className="text-[var(--fg-secondary)] mb-4">
-              You&apos;ve worked through all challenges in this lesson.
+              Great job! You&apos;ve completed this lesson.
             </p>
             {nextLink && (
               <Link
@@ -202,13 +234,7 @@ export default function LessonPage({
                   hover:opacity-90 transition-opacity"
               >
                 {hasNextLesson ? "Next Lesson" : "Next Module"}
-                <svg
-                  className="w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </Link>
@@ -246,14 +272,7 @@ export default function LessonPage({
           Back to Module
         </Link>
 
-        {nextLink && !lessonComplete ? (
-          <button
-            disabled
-            className="flex items-center gap-2 text-[var(--fg-muted)] opacity-50 cursor-not-allowed"
-          >
-            <span className="text-sm">Complete challenges first</span>
-          </button>
-        ) : nextLink ? (
+        {nextLink && (!challengeContent || lessonComplete) ? (
           <Link
             href={nextLink}
             className="group flex items-center gap-2 text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
@@ -271,6 +290,10 @@ export default function LessonPage({
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </Link>
+        ) : nextLink ? (
+          <span className="text-sm text-[var(--fg-muted)] opacity-50">
+            Complete challenges first
+          </span>
         ) : (
           <span className="text-sm text-[var(--success)]">Course Complete!</span>
         )}
