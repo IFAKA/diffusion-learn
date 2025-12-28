@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "@/lib/progress-context";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { LoadingPlaceholder } from "@/components/ui/spinner";
-import { modules, lessons } from "@/lib/content";
+import { modules, lessons, TOTAL_CHALLENGES } from "@/lib/content";
+import { Confetti } from "@/components/ui/confetti";
+import { CompletionModal } from "@/components/ui/completion-modal";
 
 const RecallQuiz = dynamic(
   () => import("@/components/challenges/recall-quiz").then(m => m.RecallQuiz),
@@ -24,8 +26,23 @@ export default function LearnPage() {
   } = useProgress();
 
   const [showingReview, setShowingReview] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationShown, setCelebrationShown] = useState(false);
 
   const percent = getPercentComplete();
+
+  // Check for course completion
+  useEffect(() => {
+    if (percent === 100 && !celebrationShown) {
+      // Check localStorage to avoid showing on every page load
+      const hasSeenCelebration = localStorage.getItem("diffusion-learn-celebration-shown");
+      if (!hasSeenCelebration) {
+        setShowCelebration(true);
+        setCelebrationShown(true);
+        localStorage.setItem("diffusion-learn-celebration-shown", "true");
+      }
+    }
+  }, [percent, celebrationShown]);
   const understanding = getUnderstandingScore();
   const dueReviews = getDueReviews(3);
   const reviewStats = getReviewStats();
@@ -223,6 +240,15 @@ export default function LearnPage() {
           );
         })}
       </div>
+
+      {/* Completion celebration */}
+      {showCelebration && <Confetti />}
+      <CompletionModal
+        isOpen={showCelebration}
+        onClose={() => setShowCelebration(false)}
+        stats={understanding}
+        totalChallenges={TOTAL_CHALLENGES}
+      />
     </div>
   );
 }

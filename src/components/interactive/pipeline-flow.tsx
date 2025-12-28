@@ -56,7 +56,7 @@ export function PipelineFlow() {
     setIsAnimating(true);
     for (let i = 0; i < stages.length; i++) {
       setActiveStage(i);
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 1200));
     }
     await new Promise((r) => setTimeout(r, 500));
     setActiveStage(null);

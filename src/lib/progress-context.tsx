@@ -178,6 +178,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const resetProgress = () => {
     setProgress(defaultProgress);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("diffusion-learn-celebration-shown");
   };
 
   // Get challenges that are due for review

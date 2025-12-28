@@ -3359,7 +3359,7 @@ export function getModule(moduleId: number): Module | null {
 }
 
 export const TOTAL_CHALLENGES = Object.values(lessons).reduce(
-  (sum, lesson) => sum + lesson.challenges.length,
+  (sum, lesson) => sum + lesson.challenges.length + (lesson.transferQuestion ? 1 : 0),
   0
 );
 
